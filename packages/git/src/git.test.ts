@@ -1861,6 +1861,20 @@ branch refs/heads/feature/auth
       });
     });
 
+    test('resolves self-hosted gitlab context when remote host matches GITLAB_URL', () => {
+      expect(
+        git.resolveForgeContext({
+          remoteUrl: 'git@git.softmg.ru:group/repo.git',
+          env: { GITLAB_URL: 'https://git.softmg.ru' } as NodeJS.ProcessEnv,
+        })
+      ).toEqual({
+        type: 'gitlab',
+        apiBase: 'https://git.softmg.ru/api/v4',
+        webBase: 'https://git.softmg.ru',
+        cli: 'glab',
+      });
+    });
+
     test('resolves unknown context for unsupported forge', () => {
       expect(
         git.resolveForgeContext({

@@ -33,7 +33,8 @@ export function resolveForgeContext(params: {
   env?: NodeJS.ProcessEnv;
 }): ForgeContext {
   const env = params.env ?? process.env;
-  const type = detectForgeType(params.remoteUrl);
+  const configuredGitlabUrl = normalizeUrlBase(env.GITLAB_URL);
+  const type = detectForgeTypeFromContext(params.remoteUrl, configuredGitlabUrl);
 
   if (type === 'github') {
     return {
@@ -45,7 +46,6 @@ export function resolveForgeContext(params: {
   }
 
   if (type === 'gitlab') {
-    const configuredGitlabUrl = normalizeUrlBase(env.GITLAB_URL);
     const webBase =
       configuredGitlabUrl ?? extractRemoteWebBase(params.remoteUrl) ?? 'https://gitlab.com';
     return {
@@ -61,6 +61,25 @@ export function resolveForgeContext(params: {
     apiBase: '',
     webBase: '',
   };
+}
+
+function detectForgeTypeFromContext(
+  remoteUrl: string | null | undefined,
+  configuredGitlabUrl: string | null
+): ForgeType {
+  const detected = detectForgeType(remoteUrl);
+  if (detected !== 'unknown') return detected;
+
+  const remoteHost = extractRemoteHost(remoteUrl ?? '')?.toLowerCase();
+  const configuredGitlabHost = configuredGitlabUrl
+    ? extractRemoteHost(configuredGitlabUrl)?.toLowerCase()
+    : null;
+
+  if (remoteHost && configuredGitlabHost && remoteHost === configuredGitlabHost) {
+    return 'gitlab';
+  }
+
+  return 'unknown';
 }
 
 function extractRemoteHost(remoteUrl: string): string | null {

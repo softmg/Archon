@@ -1,0 +1,1 @@
+After code changes, run the relevant focused tests first, then `bun run type-check`, and before PRs run `bun run validate`. For frontend/UI changes, start the dev server and verify behavior manually in browser; for platform integrations, verify via the actual platform or the web API where applicable. Keep changes reversible and do not bypass failing hooks/checks.
